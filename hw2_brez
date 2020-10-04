@@ -1,0 +1,66 @@
+#include "tgaimage.h"
+#include <iostream>
+using namespace std;
+#include <algorithm>
+#include <cmath>
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+int main(int argc, char** argv) {
+	double x0, x1, y1, y0, d, dx, dy, x, y, ox1, ox2, oy1, oy2, fx = 1, fy = 1;
+	TGAImage image(100, 100, TGAImage::RGB);
+	cout << "enter x0 y0 x1 y1" << endl;
+	cin >> x0 >> y0 >> x1 >> y1;
+	if ((x0 >= x1) and (y0 >= y1)) {
+		swap(x0, x1);
+		swap(y0, y1);
+	}
+	oy1 = min(y0, y1); // иксовая координата отрезка лежит между ох1 и ох2, аналогично для у
+	oy2 = max(y0, y1);
+	ox1 = min(x0, x1);
+	ox2 = max(x0, x1);
+	if (x0 > x1) { // ограничения, зависящие от октанта
+		ox1 = x1;
+		oy2 = y1;
+		fx = -1;
+	}
+	else if (y0 > y1) {
+		ox2 = x1;
+		oy1 = y1;
+		fy = -1;
+	}
+	dy =abs( y1 - y0);
+	dx =abs( x1 - x0);
+	d = 2 * dy - dx;
+	x = x0;
+	y = y0;
+	if (abs(dx) > abs(dy)) {
+		do {
+			image.set(round(x), round(y), red);
+			if (d < 0) { d += 2 * dy; }
+			else {
+				d += 2 * (dy - dx);
+				y = y + fy;
+			}
+			x =x + fx;
+		} while (x <= ox2 and x >= ox1 and y <= oy2 and y >= oy1);
+    }
+	else {
+		do {
+			image.set(round(x), round(y), red);
+			if (d < 0) { d += 2 * dx; }
+			else {
+				d += 2 * (dx - dy);
+				x = x + fx;
+			}
+			y = y + fy;
+		} while (x <= ox2 and x >= ox1 and y <= oy2 and y >= oy1);
+	}
+
+	
+
+	image.flip_vertically(); 
+	image.write_tga_file("output.tga");
+	return 0;
+}
