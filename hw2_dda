@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 		ox1 = x1;
 		oy2 = y1;
 	}
-	else {
+	else if (y0 > y1){
 		ox2 = x1;
 		oy1 = y1;
 	}
