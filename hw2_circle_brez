@@ -1,0 +1,47 @@
+#include "tgaimage.h"
+#include <iostream>
+using namespace std;
+#include <algorithm>
+#include <cmath>
+
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+
+void circle_px(double& x, double& y, double& x2, double& y2, TGAImage& image) {
+	int _x2, _y2;
+	_x2 = x2 - x;//точки x1,x2 в системе координат с центром окружности в точке (0,0) 
+	_y2 = y2 - y;
+	image.set(x2, y2, red);
+	image.set(-_x2 + x, _y2 + y, red); // распространение точки на все октанты, переход в исходную систему координат 
+	image.set(_x2 + x, -_y2 + y, red);
+	image.set(-_x2 + x, -_y2 + y, red);
+	image.set(_y2 + x, _x2 + y, red);
+	image.set(_y2 + x, -_x2 + y, red);
+	image.set(-_y2 + x, _x2 + y, red);
+	image.set(-_y2 + x, -_x2 + y, red);
+}
+
+
+int main(int argc, char** argv) {
+	double x0, y0, r, d, error = 0;
+	double x,y;
+	TGAImage image(100, 100, TGAImage::RGB);
+	cout << "enter x y r" << endl;
+	cin >> x0 >> y0 >> r;
+	d = 2 - 2 * r;
+	x = x0; y = y0 + r;
+	do {
+		circle_px(x0, y0, x, y, image);
+		if (d < 0) d += 4 * x-4*x0 + 6;
+		else {
+			d += 4 * (x-x0 - y+y0) + 10;
+			y--;
+		}
+		x++;
+	} while (x <( x0 + (r / sqrt(2))));
+
+	
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+	return 0;
+}
