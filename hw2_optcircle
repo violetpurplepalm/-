@@ -6,59 +6,30 @@ using namespace std;
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
-void Line(double x0, double x1, double y0, double y1, TGAImage &image) {
-	double  m, epsilon, dx, dy, x, y, t, ox1, ox2, oy1, oy2;
-	if ((x0 >= x1) and (y0 >= y1)) {
-		swap(x0, x1);
-		swap(y0, y1);
-	}
-	oy1 = min(y0, y1); // иксовая координата отрезка лежит между ох1 и ох2, аналогично для у
-	oy2 = max(y0, y1);
-	ox1 = min(x0, x1);
-	ox2 = max(x0, x1);
-	if (x0 > x1) { // ограничения, зависящие от октанта
-		ox1 = x1;
-		oy2 = y1;
-	}
-	else if (y0 > y1) {
-		ox2 = x1;
-		oy1 = y1;
-	}
-	image.set(x0, y0, red);
-	dy = y1 - y0;
-	dx = x1 - x0;
-	m = max(abs(dx), abs(dy));
-	epsilon = 1 / m;
-	x = x0;
-	y = y0;
-	while (x <= ox2 and x >= ox1 and y <= oy2 and y >= oy1) {
-		x = x + dx * epsilon;
-		y = y + dy * epsilon;
-		image.set(round(x), round(y), red);
-	}
 
-	
+void circle_px(double& x, double& y, int& x2, int& y2, TGAImage& image) {
+	int _x2, _y2;
+	_x2 = x2 - x;//точки x1,x2 в системе координат с центром окружности в точке (0,0) 
+	_y2 = y2 - y;
+	image.set(x2, y2, red);
+	image.set(-_x2 + x, _y2 + y, red); // распространение точки на все октанты, переход в исходную систему координат 
+	image.set(_x2 + x, -_y2 + y, red);
+	image.set(-_x2 + x, -_y2 + y, red);
+	image.set(_y2 + x, _x2 + y, red);
+	image.set(_y2 + x, -_x2 + y, red);
+	image.set(-_y2 + x, _x2 + y, red);
+	image.set(-_y2 + x, -_x2 + y, red);
 }
+
 void circle(double x, double y, double r, TGAImage & image) {
-	float x1, x2, y1, y2, _x1, _x2, _y1, _y2;
+	int  x2, y2, _x2, _y2;
 	x2 = x + r;
 	y2 = y;
-	for (int a = 0; a <= 45; ++a) {
-		x1 = x2; y1 = y2;
-		x2 = round(round(r * cos(a)) + x);
-		y2 = round(round(r * sin(a)) + y);
-		_x1 = x1 - x; //точки x1,x2,y1,y2 в системе координат с центром окружности в точке (0,0) 
-		_x2 = x2 - x;
-		_y1 = y1 - y;
-		_y2 = y2 - y;
-		Line(x1, x2, y1, y2, image);
-		Line(-_x1 + x, -_x2 + x, _y1 + y, _y2 + y, image); // распространение точки на все октанты, переход в исходную систему координат 
-		Line(_x1 + x, _x2 + x, -_y1 + y, -_y2 + y, image);
-		Line(-_x1 + x, -_x2 + x, -_y1 + y, -_y2 + y, image);
-		Line( _y1 + x, _y2 + x, _x1 + y, _x2 + y, image);
-		Line( _y1 + x, _y2 + x, -_x1 + y, -_x2 + y, image);
-		Line(-_y1 + x, -_y2 + x, _x1 + y, _x2 + y, image);
-		Line(-_y1 + x, -_y2 + x, -_x1 + y, -_x2 + y, image);
+	for (double a = 0; a <= 45; a = a+0.5) { // c 0.5 получается симпатичнее
+		x2 = round(r * cos(a)) + x;
+		y2 =round(r * sin(a)) + y;
+		circle_px(x, y, x2, y2, image);
+		
 	}
 }
 int main(int argc, char** argv) {
