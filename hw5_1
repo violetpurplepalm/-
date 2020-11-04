@@ -1,1 +1,121 @@
-123
+#include "tgaimage.h"
+#include <iostream>
+using namespace std;
+#include <algorithm>
+#include <cmath>
+#include <vector>
+#include <set>
+#include <map>
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red = TGAColor(255, 0, 0, 255);
+//void add(int x,int y, map<int,set<int>>& p) {
+	//p[y].insert(x);
+//}
+void brez(int x0, int y0, int x1, int y1, TGAImage & image, map<int, vector<int>>& p)
+{
+	int A, B, sign;
+	A = y1 - y0;
+	B = x0 - x1;
+	if (abs(A) > abs(B)) sign = 1;
+	else sign = -1;
+	int signa, signb;
+	if (A < 0) signa = -1;
+	else signa = 1;
+	if (B < 0) signb = -1;
+	else signb = 1;
+	int f = 0;
+	image.set(x0, y0, red);
+	if (y0 != y1) 
+	{
+		p[y0].push_back(x0);
+		//cout << x0 << y0;
+	}
+	int x = x0, y = y0;
+	if (sign == -1)
+	{
+		do {
+			f += A * signa;
+			if (f > 0)
+			{
+				f -= B * signb;
+				y += signa;
+			}
+			x -= signb;
+			image.set(x, y, red);
+			if (y0 != y1)
+			{	p[y].push_back(x);
+				//cout << x << y;
+			}
+			
+
+		} while (x != x1 || y != y1);
+	}
+	else
+	{
+		do {
+			f += B * signb;
+			if (f > 0) {
+				f -= A * signa;
+				x -= signb;
+			}
+			y += signa;
+			image.set(x, y, red);
+			if (y0 != y1) 
+			{
+				p[y].push_back(x);
+				//cout << x << y;
+			}
+		} while (x != x1 || y != y1);
+	}
+}
+void polygon(int n, TGAImage& image, map<int, vector<int>>& p) {
+	int v1, v2, u_1,u_2;
+	cin >> v1 >> v2;
+	int u1 = v1;
+	int u2 = v2;
+
+	for (int i = 1; i <= n - 1; i++) {
+		cin >> u_1 >> u_2;
+		brez(u1, u2, u_1, u_2, image, p);
+		u1 = u_1;
+		u2 = u_2;
+	}
+	brez(u1, u2, v1, v2, image, p);
+	for (auto & item : p) {
+		sort(item.second.begin(), item.second.end());
+		int l = item.second.size();
+		int k = 1;
+		for (int i = 1; i <=( l - 1); i++) {
+			int x1 = item.second[i - 1];
+			if (i % 2 == 1) 
+			//or item.second[i] - item.second[i - 1] ==0 ) {
+				for (int x=x1; x < item.second[i]; ++x) image.set(x, item.first, red);
+				//k++;
+			//}
+			//else if (item.second[i] - item.second[i - 1] != 1) {
+				//for (int x = x1; x < item.second[i]; ++x) image.set(x, item.first, red);
+				//k = 0;
+			//}
+		}
+
+	}
+	
+}
+void print(map<int, vector<int>> & p) {
+	for (auto i : p) {
+		cout << i.first << ": ";
+		for (auto k : i.second) cout << k << " ";
+		cout << endl;
+	}
+}
+int main(int argc, char** argv) {
+	map<int, vector<int>> p;
+	int n;
+	TGAImage image(100, 100, TGAImage::RGB);
+	cin >> n;
+	polygon(n, image, p);
+	image.flip_vertically();
+	image.write_tga_file("output.tga");
+	//print(p);
+	return 0;
+}
